@@ -41,16 +41,16 @@
 
 ;; bindings are defines, defstructs, defmacros, or expressions:
 
-(struct Define (name exp) #:constructor-name construct-Define #:prefab)
+(struct Define (name exp) #:constructor-name construct-Define #:transparent)
 (define make-Define
   (lambda (name exp)
     (let ([d (construct-Define name exp)])
       (unless (Name-binder name) (set-Name-binder! name d))
       (set-E-context! exp d)
       d)))
-(struct Defstruct (tag con pred sels muts) #:prefab)
-(struct Defmacro (def) #:prefab)
-(struct E (exp context labels cont?) #:mutable #:prefab
+(struct Defstruct (tag con pred sels muts) #:transparent)
+(struct Defmacro (def) #:transparent)
+(struct E (exp context labels cont?) #:mutable #:transparent
         #:constructor-name construct-E)
 (define-match-expander E: (syntax-rules () [(_ exp) (E exp _ _ _)]))
 (define (make-E exp) (construct-E exp #f '() #f))
@@ -60,21 +60,21 @@
 
 ;; All expressions are wrapped in an E:
 
-(struct And (exps) #:prefab)
-(struct App (fun args) #:prefab)
-(struct Begin (exps) #:prefab)
-(struct Const (val) #:prefab)
-(struct If (test then else) #:prefab)
-(struct Lam (names exp [free #:auto #:mutable]) #:prefab #:auto-value #f)
-(struct Let (bindings exp) #:prefab)
-(struct Clet (names bindings exp) #:prefab)
+(struct And (exps) #:transparent)
+(struct App (fun args) #:transparent)
+(struct Begin (exps) #:transparent)
+(struct Const (val) #:transparent)
+(struct If (test then else) #:transparent)
+(struct Lam (names exp [free #:auto #:mutable]) #:transparent #:auto-value #f)
+(struct Let (bindings exp) #:transparent)
+(struct Clet (names bindings exp) #:transparent)
 
-(struct Letr (bindings exp) #:prefab)
-(struct Or (exps) #:prefab)
-(struct Set! (name exp) #:prefab)
-(struct Var (name) #:prefab)
-(struct Vlam (names rest exp [free #:auto #:mutable]) #:prefab #:auto-value #f)
-(struct Letcc (name exp) #:prefab)
+(struct Letr (bindings exp) #:transparent)
+(struct Or (exps) #:transparent)
+(struct Set! (name exp) #:transparent)
+(struct Var (name) #:transparent)
+(struct Vlam (names rest exp [free #:auto #:mutable]) #:transparent #:auto-value #f)
+(struct Letcc (name exp) #:transparent)
 
 (define-match-expander Lam:
   (syntax-rules () [(_ names exp) (Lam names exp _)]))
@@ -94,7 +94,7 @@
    [mutated? #:mutable]             ; #t or #f
    [used-before-defined? #:mutable] ; #t or #f
    [cont? #:mutable]                ; #t if continuation variable
-   [map #:mutable]) #:prefab)       ; the abstract variable map
+   [map #:mutable]) #:transparent)       ; the abstract variable map
 (define (make-Name name context)
   (Name name context (name-counter) #f #f #f #f #f #f))
 
@@ -103,14 +103,14 @@
 (define extend-context cons)
 
 (struct Primitive (kind arity arg-types result-type can-be-simplified? purity)
-        #:prefab)
+        #:transparent)
 
 ; kind in Primitive =
-(struct Simple () #:prefab)
-(struct Constructor (tag) #:prefab)
-(struct Predicate (tag) #:prefab)
-(struct Selector (tag index) #:prefab)
-(struct Mutator (tag index value-index) #:prefab)
+(struct Simple () #:transparent)
+(struct Constructor (tag) #:transparent)
+(struct Predicate (tag) #:transparent)
+(struct Selector (tag index) #:transparent)
+(struct Mutator (tag index value-index) #:transparent)
 
 ;; Abstract operations on data structures
 

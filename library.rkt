@@ -1,16 +1,17 @@
-#lang scheme/base
+#lang racket/base
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Misc useful functions
 
 (require ;; also srfi/1
-         (only-in racket/list flatten filter-map take last)
-         (only-in racket/base filter)
-         (only-in srfi/1 list-index list-tabulate)
-         ;; also srfi/43
-         (only-in racket/vector vector-map vector-append)
-         (only-in srfi/43 vector-for-each)
-         racket/match)
+ (only-in racket/list flatten filter-map take last)
+ (only-in racket/base filter)
+ (only-in srfi/1 list-index list-tabulate)
+ ;; also srfi/43
+ (only-in racket/vector vector-map vector-append)
+ (only-in srfi/43 vector-for-each)
+ racket/match
+ racket/format)
 (provide set-vector!
          set-string!
          ;; known list functions
@@ -45,7 +46,8 @@
 (define set-string! string-set!)
 
 (define symbol-append
-  (λ args (string->symbol (apply string-append (map symbol->string args)))))
+  (λ args (string->symbol (apply string-append (map ~a args)))))
+
 ;; Map from right to left.
 (define mapRL
   (lambda (f l)

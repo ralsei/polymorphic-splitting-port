@@ -271,7 +271,7 @@
                contour
                [new #:mutable]
                [old #:mutable]
-               [succ #:mutable]) #:prefab)
+               [succ #:mutable]) #:transparent)
 
 (set-point-elements!
   (lambda (p)

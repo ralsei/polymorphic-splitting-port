@@ -54,6 +54,10 @@
       (propagate tree (make-context initial-contour aenv-empty) aenv-empty)
       (propagate-across-edges!)
 
+      (with-output-to-file "graph-maybe.txt"
+        (thunk (pretty-print tree))
+        #:exists 'replace)
+
       ;; Return the analysis time.
       (finish-statistics!))))
 

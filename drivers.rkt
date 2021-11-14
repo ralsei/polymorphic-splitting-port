@@ -27,11 +27,12 @@
          cf:
          init!)
 
-
+(define (dbg x)
+  (pretty-print x)
+  x)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Drivers
-
 
 (define verbose #f)
 (define times #f)
@@ -53,13 +54,13 @@
                    #;[gensym-count 1]
                    )
       (let* ([before-parse (current-inexact-milliseconds)]
-	     [unbound (begin
-			(parse exp)
+             [unbound (begin
+                        (parse exp)
                         (printf "Finished parse.~%")
-			(when cps? (cps-tree)))]
-	     [before-analysis (current-inexact-milliseconds)]
-	     [print-warnings (analyse)]
-	     [before-opt (current-inexact-milliseconds)]
+                        (when cps? (cps-tree)))]
+             [before-analysis (current-inexact-milliseconds)]
+             [print-warnings (analyse)]
+             [before-opt (current-inexact-milliseconds)]
              [_ (begin (printf "Finished analysis.~%")
                        (optimization))]
              [before-output (current-inexact-milliseconds)]
@@ -67,13 +68,13 @@
              [before-end (current-inexact-milliseconds)])
         (when times
           (printf "~a seconds parsing,~%"
-            (exact->inexact (/ (- before-analysis before-parse) 1000)))
+                  (exact->inexact (/ (- before-analysis before-parse) 1000)))
           (printf "~a seconds analysing,~%"
-            (exact->inexact (/ (- before-opt before-analysis) 1000)))
+                  (exact->inexact (/ (- before-opt before-analysis) 1000)))
           (printf "~a seconds optimizing,~%"
-            (exact->inexact (/ (- before-output before-opt) 1000)))
+                  (exact->inexact (/ (- before-output before-opt) 1000)))
           (printf "~a seconds writing output.~%"
-            (exact->inexact (/ (- before-end before-output) 1000))))
+                  (exact->inexact (/ (- before-end before-output) 1000))))
         result))))
 
 (define parse
@@ -85,8 +86,8 @@
        (match (parse-def sexp env env)
          [(list defs _ unbound)
           (define prefix* (filter (let ([free (free-in-defs defs)])
-			    (lambda (d) (memq (Define-name d) free)))
-			  prefix))
+                                    (lambda (d) (memq (Define-name d) free)))
+                                  prefix))
           (unless (null? prefix*)
             (printf "Note: prefixing ~a~%" (map (lambda (d) (pname* (Define-name d))) prefix*)))
           (let* ([defs (append prefix* defs)])
@@ -106,39 +107,39 @@
 ;; Interface routines for analysis control and inspection
 
 (set-cf:control!
-  (lambda args
-    (let ((dbg (match-lambda
-                 ('verbose (set! verbose #t))
-                 ('!verbose (set! verbose #f))
-                 ('times (set! times #t))
-                 ('!times (set! times #f))
-                 ('if-split (set-If-split! #t))
-                 ('!if-split (set-If-split! #f))
-                 ('const-split (set-Const-split! #t))
-                 (`(const-split ,(? symbol? syms) ...) (set-Const-split! syms))
-                 ('!const-split (set-Const-split! #f))
-                 ('if-warning (set-if-warning! #t))
-                 ('!if-warning (set-if-warning! #f))
-                 (`(cons-limit ,(? number? n)) (set-cons-limit! n))
-                 (`(inline-cost ,(? number? n))
-		  (set! *max-inline-cost* n)
-		  (set! *unreasonable-cost* (+ n 1)))
-                 ('stats (set! *dynamicCounts* #t))
-                 ('!stats (set! *dynamicCounts* #f))
-                 (x (begin
-                      (install-contour! x)
-                      (set! Contour x))))))
-      (if (null? args)
-          (list
-            Contour
-            (if If-split 'if-split '!if-split)
-            (if Const-split 'const-split '!const-split)
-            (if verbose 'verbose '!verbose)
-            (if times 'times '!times)
-            `(cons-limit ,cons-limit)
-	    `(inline-cost ,*max-inline-cost*)
-	    (if (or *staticCounts* *dynamicCounts*) 'stats '!stats))
-          (for-each dbg args)))))
+ (lambda args
+   (let ((dbg (match-lambda
+                ('verbose (set! verbose #t))
+                ('!verbose (set! verbose #f))
+                ('times (set! times #t))
+                ('!times (set! times #f))
+                ('if-split (set-If-split! #t))
+                ('!if-split (set-If-split! #f))
+                ('const-split (set-Const-split! #t))
+                (`(const-split ,(? symbol? syms) ...) (set-Const-split! syms))
+                ('!const-split (set-Const-split! #f))
+                ('if-warning (set-if-warning! #t))
+                ('!if-warning (set-if-warning! #f))
+                (`(cons-limit ,(? number? n)) (set-cons-limit! n))
+                (`(inline-cost ,(? number? n))
+                 (set! *max-inline-cost* n)
+                 (set! *unreasonable-cost* (+ n 1)))
+                ('stats (set! *dynamicCounts* #t))
+                ('!stats (set! *dynamicCounts* #f))
+                (x (begin
+                     (install-contour! x)
+                     (set! Contour x))))))
+     (if (null? args)
+         (list
+          Contour
+          (if If-split 'if-split '!if-split)
+          (if Const-split 'const-split '!const-split)
+          (if verbose 'verbose '!verbose)
+          (if times 'times '!times)
+          `(cons-limit ,cons-limit)
+          `(inline-cost ,*max-inline-cost*)
+          (if (or *staticCounts* *dynamicCounts*) 'stats '!stats))
+         (for-each dbg args)))))
 
 ;(define cf:defprim
 ;  (match-lambda*
@@ -179,7 +180,7 @@
           (else (error "Bad args to cf:map")))))
 
 (define cf:value
- display)
+  display)
 
 (define cf:tree
   (lambda ()
@@ -194,24 +195,24 @@
     (match-let ([(cons input output-file) (apply parse-in-out args)])
       (printf "Finished load.~%")
       (process-def
-        input
-        insert-runtime-checks
-        (lambda (unbound)
-          (match output-file
-            [(or #f #t) (error "Output file required to run")]
-            [_ (check-summary unbound)
-               (check-output output-file unbound)
-               (printf "Executing ...~%")
-               (flush-output)
-               (cf:run output-file)])
-          (void))))))
+       input
+       insert-runtime-checks
+       (lambda (unbound)
+         (match output-file
+           [(or #f #t) (error "Output file required to run")]
+           [_ (check-summary unbound)
+              (check-output output-file unbound)
+              (printf "Executing ...~%")
+              (flush-output)
+              (cf:run output-file)])
+         (void))))))
 
 (define cf:run
   (lambda (file)
     (unless (eq? 'slow loaded-checks)
-        (printf "Loading slow CHECKs...~%")
-        (load "checklib.scm")
-        (set! loaded-checks 'slow))
+      (printf "Loading slow CHECKs...~%")
+      (load "checklib.scm")
+      (set! loaded-checks 'slow))
     (printf "I would run ~a, but...~%" file)
     ;;(load file)
     #;
@@ -223,58 +224,58 @@
 (define (start-run file)
   ;;(init-counters!) ;; Ian: undefined O_o
   (let ((object (string-append file ".so"))
-	(*avgCount* (if *dynamicCounts* 1.0 3.0)))
+        (*avgCount* (if *dynamicCounts* 1.0 3.0)))
     ;;(compile-file file object)
     (let loop ((i 1)
-	       (curTime 0.0)
+               (curTime 0.0)
                #;(gcTime 0.0)
                )
       (collect-garbage)
       (cond ((> i *avgCount*)
-	     (list curTime
-		   ;;gcTime
-		   ;;(- curTime gcTime)
+             (list curTime
+                   ;;gcTime
+                   ;;(- curTime gcTime)
                    ;; Ian: undefined
-		   ;;*primCount*
-		   ;;*refCount*
-		   ;;*appCount*
-		   ;;*lamCount*
+                   ;;*primCount*
+                   ;;*refCount*
+                   ;;*appCount*
+                   ;;*lamCount*
                    ))
-	    (else (let* ((start (current-inexact-milliseconds))
+            (else (let* ((start (current-inexact-milliseconds))
                          ;;(start-gc-time (sstats-gc-cpu (statistics)))
-			 (_ (load object))
-			 (end (current-inexact-milliseconds))
+                         (_ (load object))
+                         (end (current-inexact-milliseconds))
                          #;(end-gc-time (sstats-gc-cpu (statistics)))
-			 (thisTime (exact->inexact
-					   (* (- end start) clock-granularity)))
-			 #;
+                         (thisTime (exact->inexact
+                                    (* (- end start) clock-granularity)))
+                         #;
                          (thisGcTime (exact->inexact
                                       (* (- end-gc-time start-gc-time)
                                          clock-granularity))))
-		    (loop (+ i 1)
-			  (if (= i 1)
-			      thisTime
-			      (if (< thisTime curTime) thisTime curTime))
-			  #;
+                    (loop (+ i 1)
                           (if (= i 1)
-			      thisGcTime
-			      (if (< thisTime curTime) thisGcTime gcTime)))))))))
+                              thisTime
+                              (if (< thisTime curTime) thisTime curTime))
+                          #;
+                          (if (= i 1)
+                              thisGcTime
+                              (if (< thisTime curTime) thisGcTime gcTime)))))))))
 
 
 ;; Return a pair of input s-expr and output name
 (define parse-in-out
   (let ([file->def (lambda (f) `(begin ,@(readfile f)))])
     (case-lambda
-        [(x y) (match* (x y)
-                 [((? string? input)
-                   (and output (or (? string?) #f)))
-                  (cons (file->def input) output)]
-                 [((list (? string? input) ...)
-                   (and output (or (? string?) #f)))
-                  (cons `(begin ,@(map file->def input)) output)]
-                 [(input
-                   (and output (or (? string?) #f)))
-                  (cons input output)])]
+      [(x y) (match* (x y)
+               [((? string? input)
+                 (and output (or (? string?) #f)))
+                (cons (file->def input) output)]
+               [((list (? string? input) ...)
+                 (and output (or (? string?) #f)))
+                (cons `(begin ,@(map file->def input)) output)]
+               [(input
+                 (and output (or (? string?) #f)))
+                (cons input output)])]
       [(x) (match x
              [(? string? input)
               (cons (file->def input) (string-append (strip-suffix input) suffix-string))]
@@ -305,12 +306,15 @@
                     (write-bytes (write-bytes (subbytes b 1)))))])
       (if (string? file)
           (begin
-            (with-output-to-file file
-              (lambda () (printf "#lang racket~%")
-                      (doit))
+            (with-output-to-file (string-append "results/"
+                                                (path->string (file-name-from-path file)))
+              doit                      ; we're not running these with Racket, anyway...
+              #;(lambda ()
+                  #;(printf "#lang racket~%")
+                  (doit))
               #:exists 'replace)
-	    (printf "Optimized program written to file ~a~%" file))
-	  (begin (doit))))))
+            (printf "Optimized program written to file ~a~%" file))
+          (begin (doit))))))
 
 (define cf:cps
   (lambda args
@@ -321,28 +325,28 @@
     (install-contour! 'poly)
     (match-let ([(cons input output-file) (apply parse-in-out args)])
       (process-def
-        input
-	insert-runtime-checks
-        (lambda (unbound)
-          (match output-file
-            [#f (check-summary unbound)]
-            [#t (check-output output-file unbound)]
-	    [_ (check-summary unbound)
-               (check-output output-file unbound)])
-          (void))))))
+       input
+       insert-runtime-checks
+       (lambda (unbound)
+         (match output-file
+           [#f (check-summary unbound)]
+           [#t (check-output output-file unbound)]
+           [_ (check-summary unbound)
+              (check-output output-file unbound)])
+         (void))))))
 
 (define loaded-checks 'slow)
 
 #;(set-cf:run3*!
- (lambda (file)
-   (parameterize ((optimize-level 3))
-     (unless (eq? 'fast loaded-checks)
-       (unless fastlibrary-file
-         (use-error "No loaded-checks mode in this version"))
-       (printf "Loading fast CHECKs...~%")
-       (load (string-append installation-directory fastlibrary-file))
-       (set! loaded-checks 'fast))
-     (load file))))
+   (lambda (file)
+     (parameterize ((optimize-level 3))
+       (unless (eq? 'fast loaded-checks)
+         (unless fastlibrary-file
+           (use-error "No loaded-checks mode in this version"))
+         (printf "Loading fast CHECKs...~%")
+         (load (string-append installation-directory fastlibrary-file))
+         (set! loaded-checks 'fast))
+       (load file))))
 
 
 (define cf:base
@@ -354,15 +358,15 @@
     (install-contour! 'poly)
     (match-let ([(cons input output-file) (apply parse-in-out args)])
       (process-def
-        input
-        insert-runtime-checks
-        (lambda (unbound)
-          (match output-file
-            [#f (check-summary unbound)]
-            [#t (check-output output-file unbound)]
-            [_ (check-summary unbound)
-               (check-output output-file unbound)])
-          (void))))))
+       input
+       insert-runtime-checks
+       (lambda (unbound)
+         (match output-file
+           [#f (check-summary unbound)]
+           [#t (check-output output-file unbound)]
+           [_ (check-summary unbound)
+              (check-output output-file unbound)])
+         (void))))))
 
 (define cf:check
   (lambda args
@@ -370,15 +374,21 @@
     (init-envs!) ;; depends on init-parse
     (match-let ([(cons input output-file) (apply parse-in-out args)])
       (process-def
-        input
-        insert-runtime-checks
-        (lambda (unbound)
-          (match output-file
-            [#f (check-summary unbound)]
-            [#t (check-output output-file unbound)]
-            [_ (check-summary unbound)
-               (check-output output-file unbound)])
-          (void))))))
+       input
+       insert-runtime-checks
+       (lambda (unbound)
+         (match output-file
+           [#f (check-summary unbound)]
+           [#t (check-output output-file unbound)]
+           [_ (check-summary unbound)
+              (check-output output-file unbound)])
+         (void))))))
 
-;;(cf: "/home/ianj/papers/boyer.scm")
-(cf: "church.scm")
+(define argv (current-command-line-arguments))
+(define argc (vector-length argv))
+
+(if (zero? argc)
+    (cf:help)
+    (begin
+      (cf: (vector-ref argv 0))
+      (cf:tree)))
