@@ -47,29 +47,29 @@
     (set! result-map (make-vector n-labels '()))))
 
 (set-index-result-map!
-  (lambda (l k)
-    (let* ([q (vector-ref result-map l)]
-           [r (assoc k q)])
-      (if r
-          (cdr r)
-          (let ((v (make-empty-point l k)))
-            (vector-set! result-map l (cons (cons k v) q))
-            v)))))
+ (lambda (l k)
+   (let* ([q (vector-ref result-map l)]
+          [r (assoc k q)])
+     (if r
+         (cdr r)
+         (let ((v (make-empty-point l k)))
+           (vector-set! result-map l (cons (cons k v) q))
+           v)))))
 
 ;; Try to set the point for <l,k> to p.  We may not be able
 ;; to do this if the point for <l,k> has already been demanded.
 (set-result-map=!
-  (lambda (l k p)
-    (let* ([q (vector-ref result-map l)]
-           [r (assoc k q)])
-      (if r
-          (p->p p (cdr r))
-          (begin (vector-set! result-map l (cons (cons k p) q))
-		 p)))))
+ (lambda (l k p)
+   (let* ([q (vector-ref result-map l)]
+          [r (assoc k q)])
+     (if r
+         (p->p p (cdr r))
+         (begin (vector-set! result-map l (cons (cons k p) q))
+                p)))))
 
 (set-contours-at-label!
-  (lambda (l)
-    (map car (vector-ref result-map l))))
+ (lambda (l)
+   (map car (vector-ref result-map l))))
 
 (define points-at-label
   (lambda (l)
@@ -95,17 +95,17 @@
 (define init-var-map!
   (lambda ()
     (for-each
-      (lambda (x) (set-Name-map! x '()))
-      variables)))
+     (lambda (x) (set-Name-map! x '()))
+     variables)))
 
 (set-index-var-map!
-  (lambda (x k)
-    (let ([r (assoc k (Name-map x))])
-      (if r
-          (cdr r)
-          (let ((v (make-empty-point x k)))
-            (set-Name-map! x (cons (cons k v) (Name-map x)))
-            v)))))
+ (lambda (x k)
+   (let ([r (assoc k (Name-map x))])
+     (if r
+         (cdr r)
+         (let ((v (make-empty-point x k)))
+           (set-Name-map! x (cons (cons k v) (Name-map x)))
+           v)))))
 
 (define contours-at-var
   (lambda (x)
@@ -157,9 +157,9 @@
   (lambda (kind l . args)
     (define l*
       (cond [(or (eq? Const-split #t)
-              (and (pair? Const-split) (memq kind Const-split))
-              (not (null? args))
-              (eq? kind 'prim))
+                 (and (pair? Const-split) (memq kind Const-split))
+                 (not (null? args))
+                 (eq? kind 'prim))
              l]
             [else 0]))
     (define key `(,kind ,@args))
@@ -200,60 +200,60 @@
 (define in-avals?
   (lambda (con a)
     (intset-exists?
-      (lambda (x) (memq (aval-kind x) con))
-      a)))
+     (lambda (x) (memq (aval-kind x) con))
+     a)))
 
 ;; See if any but certain constructors are in an abstract value set
 (define except-in-avals?
   (lambda (con a)
     (intset-exists?
-      (lambda (x) (not (memq (aval-kind x) con)))
-      a)))
+     (lambda (x) (not (memq (aval-kind x) con)))
+     a)))
 
 ;; Filter avals for certain constructors
 (define filter-avals
   (lambda (con a)
     (intset-filter
-      (lambda (x) (memq (aval-kind x) con))
-      a)))
+     (lambda (x) (memq (aval-kind x) con))
+     a)))
 
 ;; Filter avals for all but certain constructors
 (define except-avals
   (lambda (con a)
     (intset-filter
-      (lambda (x) (not (memq (aval-kind x) con)))
-      a)))
+     (lambda (x) (not (memq (aval-kind x) con)))
+     a)))
 
 ;; Split a set of abstract values, generating new contours for closures
 (set-split!
-  (lambda (a new-contour)
-    (intset-map
-      (lambda (v)
-        (if (eq? (aval-kind v) 'closure)
-            (aval 'closure
-                  (aval-label v)
-                  (new-contour (aval-contour v))
-                  (aval-env v))
-            v))
-      a)))
+ (lambda (a new-contour)
+   (intset-map
+    (lambda (v)
+      (if (eq? (aval-kind v) 'closure)
+          (aval 'closure
+                (aval-label v)
+                (new-contour (aval-contour v))
+                (aval-env v))
+          v))
+    a)))
 
 ;; Split a set of abstract values, replacing contours of closures and certain environment vars
 (set-split-env!
-  (lambda (a vars new-contour)
-    (intset-map
-      (lambda (v)
-        (if (eq? (aval-kind v) 'closure)
-            (aval 'closure
-                  (aval-label v)
-                  (new-contour (aval-contour v))
-                  (env-map
-                    (lambda (x k)
-                      (if (memq x vars)
-                          (new-contour k)
-                          k))
-                    (aval-env v)))
-            v))
-      a)))
+ (lambda (a vars new-contour)
+   (intset-map
+    (lambda (v)
+      (if (eq? (aval-kind v) 'closure)
+          (aval 'closure
+                (aval-label v)
+                (new-contour (aval-contour v))
+                (env-map
+                 (lambda (x k)
+                   (if (memq x vars)
+                       (new-contour k)
+                       k))
+                 (aval-env v)))
+          v))
+    a)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Program points.
@@ -274,24 +274,24 @@
                [succ #:mutable]) #:transparent)
 
 (set-point-elements!
-  (lambda (p)
-    (intset-union (Point-new p) (Point-old p))))
+ (lambda (p)
+   (intset-union (Point-new p) (Point-old p))))
 
 (define make-empty-point
   (lambda (l k)
     (set! n-points (+ 1 n-points))
     (Point
-      l
-      k
-      (intset-make-empty)
-      (intset-make-empty)
-      '())))
+     l
+     k
+     (intset-make-empty)
+     (intset-make-empty)
+     '())))
 
 (set-p->!
-  (lambda (p action)
-    (set-Point-succ! p (cons action (Point-succ p)))
-    (unless (intset-empty? (Point-old p))
-      (action (Point-old p)))))
+ (lambda (p action)
+   (set-Point-succ! p (cons action (Point-succ p)))
+   (unless (intset-empty? (Point-old p))
+     (action (Point-old p)))))
 
 (define p->p
   (lambda (p s)
@@ -315,11 +315,11 @@
       (enqueue-point! p))))
 
 (set-p+avals!
-  (lambda (p new)
-    (let ([new (intset-difference new (Point-old p))])
-      (unless (intset-empty? new)
-        (set-Point-new! p (intset-union new (Point-new p)))
-        (enqueue-point! p)))))
+ (lambda (p new)
+   (let ([new (intset-difference new (Point-old p))])
+     (unless (intset-empty? new)
+       (set-Point-new! p (intset-union new (Point-new p)))
+       (enqueue-point! p)))))
 
 (define work-q '())
 
@@ -367,8 +367,9 @@
                                (Point-contour f))))]))))
 
 (define print-point
-  (lambda (a)
-    (map print-aval a)))
+  (match-lambda
+    [(and p (Point label contour new old succ))
+     `((Point ,(map print-aval (point-elements p))))]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Statistics
@@ -376,17 +377,17 @@
 (define n-points 0)
 
 (set-print-abstract-statistics!!
-  (lambda ()
-    (define size (lambda (p) (intset-size (point-elements p))))
-    (define n (+ (for*/sum ([v (in-list variables)]
-                            [p (in-list (points-at-var v))])
-                           (size p))
-                 (for*/sum ([l (in-range n-labels)]
-                            [p (in-list (points-at-label l))])
-                           (size p))))
-    (printf "; ~a program points, ~a distinct values, ~a values in the graph~%"
-            n-points n-avals n)
-    (printf "; ~a entries in call map~%" (total-call-map-size))))
+ (lambda ()
+   (define size (lambda (p) (intset-size (point-elements p))))
+   (define n (+ (for*/sum ([v (in-list variables)]
+                           [p (in-list (points-at-var v))])
+                  (size p))
+                (for*/sum ([l (in-range n-labels)]
+                           [p (in-list (points-at-label l))])
+                  (size p))))
+   (printf "; ~a program points, ~a distinct values, ~a values in the graph~%"
+           n-points n-avals n)
+   (printf "; ~a entries in call map~%" (total-call-map-size))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ALL OLD AND POSSIBLY OUT OF DATE
@@ -416,25 +417,25 @@
     (let ((now (current-inexact-milliseconds)))
       (printf "~a distinct avals have been constructed.~%" n-avals)
       (printf "Result map has ~a labels, ~a variables.~%"
-        n-labels
-        (length variables))
+              n-labels
+              (length variables))
       (let* ((full-map (append
-                         (map Name-map variables)
-                         (vector->list result-map)))
+                        (map Name-map variables)
+                        (vector->list result-map)))
              (n-points (foldl-map + length 0 full-map))
              (n-vals (foldl-map
-                       +
-                       (lambda (y)
-                         (foldl-map
-                           +
-                           (lambda (x) (intset-size (point-elements (cdr x))))
-                           0
-                           y))
-                       0
-                       full-map)))
+                      +
+                      (lambda (y)
+                        (foldl-map
+                         +
+                         (lambda (x) (intset-size (point-elements (cdr x))))
+                         0
+                         y))
+                      0
+                      full-map)))
         (printf "Result map has ~a Points containing ~a values.~%"
-          n-points
-          n-vals))
+                n-points
+                n-vals))
       (printf "Merging time ~a ms.~%" merging-time)
       (if (zero? running-time)
           (begin
@@ -446,59 +447,59 @@
 (define print-points
   (lambda ()
     (let* ((full-map (append
-                       (map Name-map variables)
-                       (vector->list result-map)))
+                      (map Name-map variables)
+                      (vector->list result-map)))
            (n-points (foldl-map + length 0 full-map))
            (n-vals (foldl-map
-                     +
-                     (lambda (y)
-                       (foldl-map
-                         +
-                         (lambda (x) (intset-size (point-elements (cdr x))))
-                         0
-                         y))
-                     0
-                     full-map)))
+                    +
+                    (lambda (y)
+                      (foldl-map
+                       +
+                       (lambda (x) (intset-size (point-elements (cdr x))))
+                       0
+                       y))
+                    0
+                    full-map)))
       (printf "Result map has ~a Points containing ~a values.~%"
-        n-points
-        n-vals)
+              n-points
+              n-vals)
       (printf "Point size distribution:  (size : # of sets)~%")
       (pretty-print
-        (frequency
-          (lambda (mark)
-            (for-each
-              (lambda (y)
-                (for-each
-                  (lambda (x)
-                    (mark (intset-size (point-elements (cdr x)))))
-                  y))
-              full-map))
-          n-points)))))
+       (frequency
+        (lambda (mark)
+          (for-each
+           (lambda (y)
+             (for-each
+              (lambda (x)
+                (mark (intset-size (point-elements (cdr x)))))
+              y))
+           full-map))
+        n-points)))))
 
 (define report-unreachability
   (lambda ()
     (let ([apps '()])
       (natural-for-each
-        (lambda (l)
-          (match (label->node l)
-            [(E: (App f args))
-             (for-each
-               (lambda (k)
-                 (unless (and (reached? (labelof f) k)
-                              (not (intset-empty? (point-elements (index-result-map (labelof f) k)))))
-                   (set! apps (cons (cons l k) apps))))
-               (contours-at-label l))]
-            [_ #f]))
-        n-labels)
+       (lambda (l)
+         (match (label->node l)
+           [(E: (App f args))
+            (for-each
+             (lambda (k)
+               (unless (and (reached? (labelof f) k)
+                            (not (intset-empty? (point-elements (index-result-map (labelof f) k)))))
+                 (set! apps (cons (cons l k) apps))))
+             (contours-at-label l))]
+           [_ #f]))
+       n-labels)
       apps)))
 
 (define distribution
   (lambda (dist)
     (pretty-print
-      (let loop ((n (- (length dist) 1)) (acc '()))
-        (cond ((> 0 n) acc)
-              ((zero? (list-ref dist n)) (loop (- n 1) acc))
-              (else (loop (- n 1) (cons `(,n : ,(list-ref dist n)) acc))))))))
+     (let loop ((n (- (length dist) 1)) (acc '()))
+       (cond ((> 0 n) acc)
+             ((zero? (list-ref dist n)) (loop (- n 1) acc))
+             (else (loop (- n 1) (cons `(,n : ,(list-ref dist n)) acc))))))))
 
 (define (max-list lst)
   (for/fold ([acc 0]) ([x (in-list lst)])
@@ -518,24 +519,24 @@
 (define histogram
   (lambda (dist)
     (let* ((counts (foldr
-                     (lambda (x acc)
-                       (if (and (null? acc) (zero? x))
-                           '()
-                           (cons x acc)))
-                     '()
-                     dist))
+                    (lambda (x acc)
+                      (if (and (null? acc) (zero? x))
+                          '()
+                          (cons x acc)))
+                    '()
+                    dist))
            (max-count (max-list counts)))
       (printf "X-axis 0:~a, Y-axis 0:~a~n" (length counts) max-count)
       (make-histogram
-        intset-version
-        max-count
-        counts))))
+       intset-version
+       max-count
+       counts))))
 
 (define frequency
   (lambda (enumerate bound)
     (let ((dist (make-vector bound 0)))
       (enumerate
-        (lambda (n) (vector-set! dist n (+ 1 (vector-ref dist n)))))
+       (lambda (n) (vector-set! dist n (+ 1 (vector-ref dist n)))))
       (let loop ((n (- bound 1)) (acc '()))
         (cond ((> 0 n) acc)
               ((zero? (vector-ref dist n)) (loop (- n 1) acc))

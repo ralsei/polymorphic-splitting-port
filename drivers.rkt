@@ -14,7 +14,9 @@
          "free.rkt"
          "init.rkt"
          "print.rkt"
-         "cps.rkt")
+         "cps.rkt"
+
+         "abstract.rkt")
 
 (provide cf:help
          cf:base
@@ -384,11 +386,25 @@
               (check-output output-file unbound)])
          (void))))))
 
+;; gets a set of singleton variables
+;; XXX: names get duplicated when they're duplicated in the program
+(define (singleton-analysis)
+  (for/list ([x-or-l (in-list variables)]
+             #:when (= (length (contours-at-var x-or-l)) 1))
+    (cons (pname* x-or-l)
+          (print-point (index-var-map x-or-l (first (contours-at-var x-or-l)))))))
+
 (define argv (current-command-line-arguments))
 (define argc (vector-length argv))
+
+(define (print-hash hsh)
+  (for ([(k v) (in-hash hsh)])
+    (display k)
+    (display " ")
+    (displayln v)))
 
 (if (zero? argc)
     (cf:help)
     (begin
       (cf: (vector-ref argv 0))
-      (cf:tree)))
+      (pretty-print (singleton-analysis))))

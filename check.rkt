@@ -6,7 +6,9 @@
          "mutrec.rkt"
          "unparse.rkt")
 
-(provide insert-runtime-checks check-summary check-output)
+(provide insert-runtime-checks check-summary check-output
+         ;; hazel 2021-11-17
+         nightmare-map)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Marking checks in the tree.
@@ -28,45 +30,54 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Inserting Runtime checks
 
+;; hazel 2021-11-17: instead of inserting runtime checks, make some
+;; global state and map avals to exprs and then try and get a singleton
+;; analysis out of it
+
+(define nightmare-map (make-hash))
+
 (define insert-runtime-checks
   (lambda ()
     (init-check-map!)
     (natural-for-each
-      (lambda (l)
-        (match (label->node l)
-          [(E: (App fun args))
-           (let ([nargs (length args)]
-                 [fl (labelof fun)])
-             (for-each
-               (lambda (k)
-                 (intset-for-each
-                   (lambda (a)
-                     (case (aval-kind a)
-                       [(closure)
-                        (match (label->node (aval-label a))
-                          [(E: (Lam: required _))
-                           (unless (= nargs (length required))
-                             (insert-check! (aval-label a)))]
-                          [(E: (Vlam: required _ _))
-                           (unless (>= nargs (length required))
-                             (insert-check! (aval-label a)))])]
-                       [(cont)
-                        (unless (= 1 nargs)
+     (lambda (l)
+       (match (label->node l)
+         [(E: (App fun args))
+          (let ([nargs (length args)]
+                [fl (labelof fun)])
+            (for-each
+             (lambda (k)
+               (intset-for-each
+                (lambda (a)
+                  (hash-set! nightmare-map
+                             (aval-label a)
+                             (label->node (aval-label a)))
+                  (case (aval-kind a)
+                    [(closure)
+                     (match (label->node (aval-label a))
+                       [(E: (Lam: required _))
+                        (unless (= nargs (length required))
                           (insert-check! (aval-label a)))]
-                       [(prim)
-                        (match-let ([(E: (Var p)) (label->node (aval-label a))])
-                          (unless (prim-applies-to?
-                                    p
-                                    (map (lambda (arg)
-                                           (index-result-map (labelof arg) k))
-                                         args))
-                            (insert-check! (aval-label a))))]
-                       [else
-                        (insert-check! l)]))
-                   (point-elements (index-result-map fl k))))
-               (contours-at-label fl)))]
-          [_ #f]))
-      n-labels)))
+                       [(E: (Vlam: required _ _))
+                        (unless (>= nargs (length required))
+                          (insert-check! (aval-label a)))])]
+                    [(cont)
+                     (unless (= 1 nargs)
+                       (insert-check! (aval-label a)))]
+                    [(prim)
+                     (match-let ([(E: (Var p)) (label->node (aval-label a))])
+                       (unless (prim-applies-to?
+                                p
+                                (map (lambda (arg)
+                                       (index-result-map (labelof arg) k))
+                                     args))
+                         (insert-check! (aval-label a))))]
+                    [else
+                     (insert-check! l)]))
+                (point-elements (index-result-map fl k))))
+             (contours-at-label fl)))]
+         [_ #f]))
+     n-labels)))
 
 (define prim-applies-to?
   (lambda (prim args)
